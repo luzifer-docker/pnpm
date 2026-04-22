@@ -1,4 +1,4 @@
-FROM curlimages/curl:8.19.0@sha256:9a6f6a17667960e077f1b153009aaf18ac99a622221084e1938a45a06fff057a AS fetch
+FROM curlimages/curl:8.19.0@sha256:c03110c736db81bbe1be0296f1f1608c81b954b01626bdfb0a8f84e5bd00ff3c AS fetch
 
 ARG PNPM_VERSION=v10.33.0
 
