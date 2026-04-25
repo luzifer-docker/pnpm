@@ -1,6 +1,6 @@
 FROM curlimages/curl:8.19.0@sha256:c03110c736db81bbe1be0296f1f1608c81b954b01626bdfb0a8f84e5bd00ff3c AS fetch
 
-ARG PNPM_VERSION=v10.33.1
+ARG PNPM_VERSION=v10.33.2
 
 WORKDIR /rootfs/
 RUN curl -sSfL "https://github.com/pnpm/pnpm/releases/download/${PNPM_VERSION}/pnpm-linuxstatic-x64" | \
