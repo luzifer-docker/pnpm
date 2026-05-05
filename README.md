@@ -1,11 +1,13 @@
 # luzifer-docker/pnpm
 
-Minimal `scratch`-based image containing only `pnpm` and a `pnpx` wrapper in `/usr/bin/`. It is intended as a utility image to either copy those binaries into another image or make them available temporarily during a BuildKit step.
+Minimal `scratch`-based image containing the pnpm ESM distribution in `/usr/share/pnpm/` and wrapper scripts in `/usr/bin/`. It is intended as a utility image to copy pnpm into another image.
 
 ## Contents
 
+- `/usr/share/pnpm/`
 - `/usr/bin/pnpm`
 - `/usr/bin/pnpx`
+- `pnpm` is a wrapper that executes `node /usr/share/pnpm/pnpm.mjs`
 - `pnpx` is a compatibility wrapper that executes `pnpm dlx`
 
 ## Use Cases
@@ -18,20 +20,12 @@ If you want to install `pnpm` into your own image, copy the full rootfs from thi
 COPY --from=ghcr.io/luzifer-docker/pnpm:v<version> / /
 ```
 
-This works because the image only contains the installed binaries under `/usr/bin/`.
+The target image must provide `node` on `PATH`, as pnpm is packaged as an ESM module and the `pnpm` wrapper executes it through Node.js.
 
 ### Mount pnpm temporarily during build
 
-If you only need `pnpm` for a single BuildKit `RUN` step, mount both binaries explicitly:
-
-```dockerfile
-RUN --mount=type=bind,from=ghcr.io/luzifer-docker/pnpm:v<version>,source=/usr/bin/pnpm,target=/usr/bin/pnpm \
-    --mount=type=bind,from=ghcr.io/luzifer-docker/pnpm:v<version>,source=/usr/bin/pnpx,target=/usr/bin/pnpx \
-    pnpm --version && pnpx cowsay hello
-```
-
-This keeps `pnpm` and `pnpx` available only for that build step without adding them to the final image.
+Temporary bind-mount usage is no longer the practical default. The wrappers depend on both `/usr/share/pnpm/` and a Node.js runtime in the target image, so copying the full rootfs is the recommended integration path.
 
 ## Versioning
 
-Use `ghcr.io/luzifer-docker/pnpm:v<version>` where `<version>` matches the bundled upstream `pnpm` release number.
+Use `ghcr.io/luzifer-docker/pnpm:v<version>` where `<version>` matches the packaged upstream `pnpm` release number.
