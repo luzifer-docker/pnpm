@@ -1,13 +1,13 @@
 # luzifer-docker/pnpm
 
-Minimal `scratch`-based image containing the pnpm ESM distribution in `/usr/share/pnpm/` and wrapper scripts in `/usr/bin/`. It is intended as a utility image to copy pnpm into another image.
+Minimal `scratch`-based image containing the statically linked pnpm binary and its distribution files. It is intended as a utility image to copy pnpm into another image.
 
 ## Contents
 
 - `/usr/share/pnpm/`
 - `/usr/bin/pnpm`
 - `/usr/bin/pnpx`
-- `pnpm` is a wrapper that executes `node /usr/share/pnpm/pnpm.mjs`
+- `pnpm` is a symlink to `/usr/share/pnpm/pnpm`
 - `pnpx` is a compatibility wrapper that executes `pnpm dlx`
 
 ## Use Cases
@@ -20,11 +20,11 @@ If you want to install `pnpm` into your own image, copy the full rootfs from thi
 COPY --from=ghcr.io/luzifer-docker/pnpm:v<version> / /
 ```
 
-The target image must provide `node` on `PATH`, as pnpm is packaged as an ESM module and the `pnpm` wrapper executes it through Node.js.
+The pnpm binary itself is statically linked and does not require Node.js in the target image. Package lifecycle scripts can still require a shell, Node.js, or other interpreters and tools. The `pnpx` compatibility wrapper requires `/bin/sh`.
 
 ### Mount pnpm temporarily during build
 
-Temporary bind-mount usage is no longer the practical default. The wrappers depend on both `/usr/share/pnpm/` and a Node.js runtime in the target image, so copying the full rootfs is the recommended integration path.
+The pnpm binary can run directly from the `scratch` image. Operations executing package lifecycle scripts need a suitable target image providing their required runtime tools. Copying the full rootfs remains the recommended integration path because pnpm depends on both `/usr/bin/pnpm` and `/usr/share/pnpm/`.
 
 ## Versioning
 
