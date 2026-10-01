@@ -1,13 +1,17 @@
 # luzifer-docker/pnpm
 
-Minimal `scratch`-based image containing the statically linked pnpm binary and its distribution files. It is intended as a utility image to copy pnpm into another image.
+Minimal `scratch`-based image containing the pnpm ESM distribution in `/usr/share/pnpm/` and wrapper scripts in `/usr/bin/`. It is intended as a utility image to copy pnpm into another image.
+
+## Version Policy
+
+This image intentionally tracks pnpm v11 patch releases and will not move to v12. Starting with [v12.4](https://github.com/pnpm/pnpm/releases/tag/v12.4.0), pnpm expands beyond the Node.js package-management ecosystem into managing Python and Cargo dependencies as well as build pipelines. This repository follows the Unix philosophy of "do one thing and do it well" and therefore stays on the focused v11 release line.
 
 ## Contents
 
 - `/usr/share/pnpm/`
 - `/usr/bin/pnpm`
 - `/usr/bin/pnpx`
-- `pnpm` is a symlink to `/usr/share/pnpm/pnpm`
+- `pnpm` is a wrapper that executes `node /usr/share/pnpm/pnpm.mjs`
 - `pnpx` is a compatibility wrapper that executes `pnpm dlx`
 
 ## Use Cases
@@ -20,12 +24,12 @@ If you want to install `pnpm` into your own image, copy the full rootfs from thi
 COPY --from=ghcr.io/luzifer-docker/pnpm:v<version> / /
 ```
 
-The pnpm binary itself is statically linked and does not require Node.js in the target image. Package lifecycle scripts can still require a shell, Node.js, or other interpreters and tools. The `pnpx` compatibility wrapper requires `/bin/sh`.
+The target image must provide `node` on `PATH`, as pnpm is packaged as an ESM module and the `pnpm` wrapper executes it through Node.js.
 
 ### Mount pnpm temporarily during build
 
-The pnpm binary can run directly from the `scratch` image. Operations executing package lifecycle scripts need a suitable target image providing their required runtime tools. Copying the full rootfs remains the recommended integration path because pnpm depends on both `/usr/bin/pnpm` and `/usr/share/pnpm/`.
+Temporary bind-mount usage is not the practical default. The wrappers depend on both `/usr/share/pnpm/` and a Node.js runtime in the target image, so copying the full rootfs is the recommended integration path.
 
 ## Versioning
 
-Use `ghcr.io/luzifer-docker/pnpm:v<version>` where `<version>` matches the packaged upstream `pnpm` release number.
+Use `ghcr.io/luzifer-docker/pnpm:v<version>` where `<version>` matches the packaged upstream pnpm v11 release number.
